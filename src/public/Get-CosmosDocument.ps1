@@ -2,6 +2,8 @@ function Get-CosmosDocument {
     <#
         .SYNOPSIS
             Retrieve a Cosmos DB NoSQL API document by ID using the REST API. Uses Master Key Authentication.
+        .DESCRIPTION
+            Get a Cosmos DB NoSQL document by ID. See: https://learn.microsoft.com/en-us/rest/api/cosmos-db/get-a-document
         .LINK
             New-CosmosMasterKeyAuthorizationSignature
         .EXAMPLE
@@ -52,6 +54,7 @@ function Get-CosmosDocument {
 
     # Send request to NoSQL REST API
     try {
+        Write-Verbose "Getting Cosmos DB NoSQL document with DocumentId [$DocumentId] from Collection [$ResourceId]"
         Invoke-RestMethod -Uri "$Endpoint$ResourceId/$ResourceType/$DocumentId" -Headers $Headers -Method Get
     } catch {
         Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"

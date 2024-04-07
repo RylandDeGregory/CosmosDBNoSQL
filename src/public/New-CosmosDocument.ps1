@@ -2,6 +2,8 @@ function New-CosmosDocument {
     <#
         .SYNOPSIS
             Create a new Cosmos DB NoSQL API document using the REST API. Uses Master Key Authentication.
+        .DESCRIPTION
+            Insert a Cosmos DB NoSQL document. See: https://learn.microsoft.com/en-us/rest/api/cosmos-db/create-a-document
         .LINK
             New-CosmosMasterKeyAuthorizationSignature
         .EXAMPLE
@@ -75,16 +77,19 @@ function New-CosmosDocument {
     }
 
     # Add Partition Key
+    Write-Verbose "Add PartitionKey [$PartitionKey] to document"
     Add-Member -InputObject $Document -MemberType NoteProperty -Name $PartitionKey -Value $PartitionKeyValue
 
     # Add Document ID
     if ($Document.id) {
         $Document.PSObject.Properties.Remove('id')
     }
+    Write-Verbose "Add ID [$DocumentId] to document"
     Add-Member -InputObject $Document -MemberType NoteProperty -Name 'id' -Value $DocumentId
 
     # Send request to NoSQL REST API
     try {
+        Write-Verbose "Insert document into Collection [$ResourceId]"
         $Response = Invoke-RestMethod -Uri "$Endpoint$ResourceId/$ResourceType" -Headers $Headers -Method Post -Body ($Document | ConvertTo-Json -Depth 15)
         @{
             etag              = $Response.'_etag'

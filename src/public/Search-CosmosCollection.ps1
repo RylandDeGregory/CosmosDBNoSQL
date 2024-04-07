@@ -2,6 +2,8 @@ function Search-CosmosCollection {
     <#
         .SYNOPSIS
             Retrieve one or more Cosmos DB NoSQL API documents by query using the REST API. Uses Master Key Authentication.
+        .DESCRIPTION
+            Query a Cosmos DB NoSQL Collection for one or more documents. See: https://learn.microsoft.com/en-us/rest/api/cosmos-db/query-documents
         .LINK
             New-CosmosMasterKeyAuthorizationSignature
         .EXAMPLE
@@ -85,6 +87,7 @@ function Search-CosmosCollection {
         $Headers['x-ms-documentdb-partitionkey'] = "[`"$PartitionKey`"]"
     }
 
+    Write-Verbose "Query Collection [$ResourceId] for documents"
     $Documents = do {
         # Add continuation token to headers if it is not null
         if ($ContinuationToken) {

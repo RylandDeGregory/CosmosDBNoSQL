@@ -2,6 +2,9 @@ function New-CosmosMasterKeyAuthorizationSignature {
     <#
         .SYNOPSIS
             Generate Cosmos DB Master Key Authentication header for use with the NoSQL REST API.
+        .DESCRIPTION
+            Generate an Authentication header based on the Azure Cosmos DB REST API specification:
+            https://learn.microsoft.com/en-us/rest/api/cosmos-db/access-control-on-cosmosdb-resources#constructkeytoken
         .EXAMPLE
             $AuthKeyParams = @{
                 Method     = Post
@@ -39,6 +42,8 @@ function New-CosmosMasterKeyAuthorizationSignature {
 
     $KeyType      = 'master'
     $TokenVersion = '1.0'
+
+    Write-Verbose "Generating Master Key Authentication header for a [$Method] request against Collection [$ResourceId]"
 
     $SigningString        = "$($Method.ToLower())`n$($ResourceType.ToLower())`n$ResourceId`n$($Date.ToString().ToLower())`n`n"
     $HmacSha              = [System.Security.Cryptography.HMACSHA256]@{ Key = [Convert]::FromBase64String($MasterKey) }

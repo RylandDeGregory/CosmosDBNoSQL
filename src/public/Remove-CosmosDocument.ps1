@@ -2,6 +2,8 @@ function Remove-CosmosDocument {
     <#
         .SYNOPSIS
             Remove a Cosmos DB NoSQL API document using the REST API. Uses Master Key Authentication.
+        .DESCRIPTION
+            Delete a Cosmos DB NoSQL document. See: https://learn.microsoft.com/en-us/rest/api/cosmos-db/delete-a-document
         .LINK
             New-CosmosMasterKeyAuthorizationSignature
         .EXAMPLE
@@ -52,6 +54,7 @@ function Remove-CosmosDocument {
 
     # Send request to NoSQL REST API
     try {
+        Write-Verbose "Insert document with ID [$DocumentId] into Collection [$ResourceId]"
         Invoke-RestMethod -Uri "$Endpoint$ResourceId/$ResourceType/$DocumentId" -Headers $Headers -Method Delete
     } catch {
         Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
