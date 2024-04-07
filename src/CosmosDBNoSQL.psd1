@@ -70,12 +70,10 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
-        'New-RCDCosmosMasterKeyAuthorizationSignature',
-        'New-Sha256HashedString',
-        'Get-RCDCosmosDocument',
-        'New-RCDCosmosDocument',
-        'Remove-RCDCosmosDocument',
-        'Search-RCDCosmosDocuments'
+        'Get-CosmosDocument',
+        'New-CosmosDocument',
+        'Remove-CosmosDocument',
+        'Search-CosmosCollection'
     )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -95,12 +93,12 @@
 
     # List of all files packaged with this module
     FileList = @(
-        '.\private\New-RCDCosmosMasterKeyAuthorizationSignature.ps1',
+        '.\private\New-CosmosMasterKeyAuthorizationSignature.ps1',
         '.\private\New-Sha256HashedString.ps1',
-        '.\public\Get-RCDCosmosDocument.ps1',
-        '.\public\New-RCDCosmosDocument.ps1',
-        '.\public\Remove-RCDCosmosDocument.ps1',
-        '.\public\Search-RCDCosmosDocuments.ps1'
+        '.\public\Get-CosmosDocument.ps1',
+        '.\public\New-CosmosDocument.ps1',
+        '.\public\Remove-CosmosDocument.ps1',
+        '.\public\Search-CosmosCollection.ps1'
     )
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.

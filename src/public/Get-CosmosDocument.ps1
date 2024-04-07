@@ -1,9 +1,9 @@
-function Get-RCDCosmosDocument {
+function Get-CosmosDocument {
     <#
         .SYNOPSIS
             Retrieve a Cosmos DB NoSQL API document by ID using the REST API. Uses Master Key Authentication.
         .LINK
-            New-RCDCosmosMasterKeyAuthorizationSignature
+            New-CosmosMasterKeyAuthorizationSignature
         .EXAMPLE
             $GetDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
@@ -12,7 +12,7 @@ function Get-RCDCosmosDocument {
                 PartitionKeyValue = $PartitionKeyValue
                 DocumentId        = $DocumentId
             }
-            Get-RCDCosmosDocument @GetDocParams
+            Get-CosmosDocument @GetDocParams
     #>
     [CmdletBinding()]
     param (
@@ -39,7 +39,7 @@ function Get-RCDCosmosDocument {
     $Date = [DateTime]::UtcNow.ToString('r')
 
     # Compute Authorization header value and define headers dictionary
-    $AuthorizationKey = New-RCDCosmosMasterKeyAuthorizationSignature -Method Get -ResourceId "$ResourceId/$ResourceType/$DocumentId" -Date $Date -MasterKey $MasterKey
+    $AuthorizationKey = New-CosmosMasterKeyAuthorizationSignature -Method Get -ResourceId "$ResourceId/$ResourceType/$DocumentId" -Date $Date -MasterKey $MasterKey
     $Headers = @{
         'accept'                       = 'application/json'
         'authorization'                = $AuthorizationKey

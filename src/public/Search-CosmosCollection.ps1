@@ -1,9 +1,9 @@
-function Search-RCDCosmosDocuments {
+function Search-CosmosCollection {
     <#
         .SYNOPSIS
             Retrieve one or more Cosmos DB NoSQL API documents by query using the REST API. Uses Master Key Authentication.
         .LINK
-            New-RCDCosmosMasterKeyAuthorizationSignature
+            New-CosmosMasterKeyAuthorizationSignature
         .EXAMPLE
             $Query = @{
                 query      = 'SELECT * FROM c WHERE c[@PartitionKey] = @PartitionKeyValue'
@@ -24,7 +24,7 @@ function Search-RCDCosmosDocuments {
                 ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
                 Query             = $Query
             }
-            Search-RCDCosmosDocuments @QueryDocParams
+            Search-CosmosCollection @QueryDocParams
     #>
     [CmdletBinding()]
     param (
@@ -63,7 +63,7 @@ function Search-RCDCosmosDocuments {
     $Date = [DateTime]::UtcNow.ToString('r')
 
     # Compute authorization header value
-    $AuthorizationKey = New-RCDCosmosMasterKeyAuthorizationSignature -Method Post -ResourceId $ResourceId -Date $Date -MasterKey $MasterKey
+    $AuthorizationKey = New-CosmosMasterKeyAuthorizationSignature -Method Post -ResourceId $ResourceId -Date $Date -MasterKey $MasterKey
     # Initialize continuation token
     $ContinuationToken = $null
     $Page = 1

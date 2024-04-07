@@ -1,9 +1,9 @@
-function Remove-RCDCosmosDocument {
+function Remove-CosmosDocument {
     <#
         .SYNOPSIS
             Remove a Cosmos DB NoSQL API document using the REST API. Uses Master Key Authentication.
         .LINK
-            New-RCDCosmosMasterKeyAuthorizationSignature
+            New-CosmosMasterKeyAuthorizationSignature
         .EXAMPLE
             $RemoveDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
@@ -12,7 +12,7 @@ function Remove-RCDCosmosDocument {
                 PartitionKeyValue = $PartitionKeyValue
                 DocumentId        = $DocumentId
             }
-            Remove-RCDCosmosDocument @RemoveDocParams
+            Remove-CosmosDocument @RemoveDocParams
     #>
     [CmdletBinding()]
     param (
@@ -39,7 +39,7 @@ function Remove-RCDCosmosDocument {
     $Date = [DateTime]::UtcNow.ToString('r')
 
     # Compute Authorization header value and define headers dictionary
-    $AuthorizationKey = New-RCDCosmosMasterKeyAuthorizationSignature -Method Delete -ResourceId "$ResourceId/$ResourceType/$DocumentId" -Date $Date -MasterKey $MasterKey
+    $AuthorizationKey = New-CosmosMasterKeyAuthorizationSignature -Method Delete -ResourceId "$ResourceId/$ResourceType/$DocumentId" -Date $Date -MasterKey $MasterKey
     $Headers = @{
         'accept'                       = 'application/json'
         'authorization'                = $AuthorizationKey

@@ -1,4 +1,4 @@
-function New-RCDCosmosMasterKeyAuthorizationSignature {
+function New-CosmosMasterKeyAuthorizationSignature {
     <#
         .SYNOPSIS
             Generate Cosmos DB Master Key Authentication header for use with the NoSQL REST API.
@@ -9,7 +9,7 @@ function New-RCDCosmosMasterKeyAuthorizationSignature {
                 Date       = [DateTime]::UtcNow.ToString('r')
                 MasterKey  = $MasterKey
             }
-            $AuthorizationKey = New-RCDCosmosMasterKeyAuthorizationSignature @AuthKeyParams
+            $AuthorizationKey = New-CosmosMasterKeyAuthorizationSignature @AuthKeyParams
     #>
     [OutputType([string])]
     [CmdletBinding()]

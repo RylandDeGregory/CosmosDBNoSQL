@@ -1,9 +1,9 @@
-function New-RCDCosmosDocument {
+function New-CosmosDocument {
     <#
         .SYNOPSIS
             Create a new Cosmos DB NoSQL API document using the REST API. Uses Master Key Authentication.
         .LINK
-            New-RCDCosmosMasterKeyAuthorizationSignature
+            New-CosmosMasterKeyAuthorizationSignature
         .EXAMPLE
             $NewDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
@@ -14,8 +14,9 @@ function New-RCDCosmosDocument {
                 Document          = @{property1 = 'value1'; property2 = @('value1', 'value2')} # Any valid PSObject or hashtable
                 DocumentId        = (New-Guid).Guid
             }
-            New-RCDCosmosDocument @NewDocParams
+            New-CosmosDocument @NewDocParams
     #>
+    [OutputType([hashtable])]
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -56,7 +57,7 @@ function New-RCDCosmosDocument {
     $Date = [DateTime]::UtcNow.ToString('r')
 
     # Compute Authorization header value and define headers dictionary
-    $AuthorizationKey = New-RCDCosmosMasterKeyAuthorizationSignature -Method Post -ResourceId $ResourceId -Date $Date -MasterKey $MasterKey
+    $AuthorizationKey = New-CosmosMasterKeyAuthorizationSignature -Method Post -ResourceId $ResourceId -Date $Date -MasterKey $MasterKey
     $Headers = @{
         'accept'                       = 'application/json'
         'authorization'                = $AuthorizationKey
