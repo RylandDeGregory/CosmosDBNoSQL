@@ -3,7 +3,7 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 #region Reloading SUT
 # Ensuring that we are testing this version of module and not any other version that could be in memory
 $ModulePath = "$($MyInvocation.MyCommand.Path -replace '.Tests.ps1$', '').psm1"
-$ModuleName = (($ModulePath | Split-Path -Leaf) -replace '.psm1')
+$ModuleName = 'CosmosDBNoSQL'
 @(Get-Module -Name $ModuleName).where({ $_.version -ne '0.0' }) | Remove-Module # Removing all module versions from the current context if there are any
 Import-Module -Name $ModulePath -Force -ErrorAction Stop # Loading module explicitly by path and not via the manifest
 #endregion

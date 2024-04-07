@@ -1,7 +1,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 $ModulePath = $here
-$ModuleName = Split-Path -Path $ModulePath -Leaf
+$ModuleName = 'CosmosDBNoSQL'
 
 Describe "'$ModuleName' Module Analysis with PSScriptAnalyzer" {
     Context 'Standard Rules' {
