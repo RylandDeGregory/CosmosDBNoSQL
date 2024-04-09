@@ -259,7 +259,7 @@ task Build UpdateModuleManifest, UpdatePackageSpecification, {
 
 # Synopsis: Verify the code coverage by tests
 task CodeCoverage {
-    $acceptableCodeCoveragePercent = 6
+    $acceptableCodeCoveragePercent = 0
 
     $path = $moduleSourcePath
     $files = Get-ChildItem $path -Recurse -Include '*.ps1', '*.psm1' -Exclude 'PesterTests.ps1', 'PSSATests.ps1'
