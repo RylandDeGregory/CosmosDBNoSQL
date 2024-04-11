@@ -1,11 +1,11 @@
 function New-CosmosDocument {
     <#
         .SYNOPSIS
-            Create a new Cosmos DB NoSQL API document using the REST API. Uses Master Key Authentication.
+            Create a new Cosmos DB NoSQL API document using the REST API. Uses Master Key or Entra ID Authentication.
         .DESCRIPTION
             Insert a Cosmos DB NoSQL document. See: https://learn.microsoft.com/en-us/rest/api/cosmos-db/create-a-document
         .LINK
-            New-CosmosMasterKeyAuthorizationSignature
+            New-CosmosRequestAuthorizationSignature
         .EXAMPLE
             $NewDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
@@ -18,51 +18,80 @@ function New-CosmosDocument {
             }
             New-CosmosDocument @NewDocParams
     #>
-    [OutputType([hashtable])]
-    [CmdletBinding()]
+    [OutputType([pscustomobject])]
+    [CmdletBinding(DefaultParameterSetName = 'Master Key')]
     param (
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
+        [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $Endpoint,
 
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $MasterKey,
 
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
+        [string] $AccessToken,
+
+        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
+        [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $ResourceId,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = 'Entra ID')]
+        [Parameter(ParameterSetName = 'Master Key')]
         [string] $ResourceType = 'docs',
 
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
+        [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $PartitionKey,
 
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
+        [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $PartitionKeyValue,
 
-        [Parameter(Mandatory)]
-        [psobject] $Document,
+        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
+        [Parameter(ParameterSetName = 'Master Key', Mandatory)]
+        [pscustomobject] $Document,
 
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
+        [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $DocumentId,
 
         # Whether to treat the insert operation as an update
         # if the Document ID already exists in the Collection
-        [Parameter()]
+        [Parameter(ParameterSetName = 'Entra ID')]
+        [Parameter(ParameterSetName = 'Master Key')]
         [boolean] $IsUpsert = $true,
 
         # Whether to hash the Document ID before adding to Cosmos DB
-        [Parameter()]
-        [boolean] $HashDocumentId = $true
+        [Parameter(ParameterSetName = 'Entra ID')]
+        [Parameter(ParameterSetName = 'Master Key')]
+        [boolean] $HashDocumentId = $true,
+
+        # Max depth of the JSON object that will be added to Cosmos DB
+        [Parameter(ParameterSetName = 'Entra ID')]
+        [Parameter(ParameterSetName = 'Master Key')]
+        [ValidateRange(0, 100)]
+        [int] $JsonDocumentDepth = 15
     )
 
     # Calculate current date for use in Authorization header
     $Date = [DateTime]::UtcNow.ToString('r')
 
     # Compute Authorization header value and define headers dictionary
-    $AuthorizationKey = New-CosmosMasterKeyAuthorizationSignature -Method Post -ResourceId $ResourceId -Date $Date -MasterKey $MasterKey
+    $AuthorizationParameters = @{
+        Date       = $Date
+        Method     = 'Post'
+        ResourceId = $ResourceId
+    }
+    if ($MasterKey) {
+        $AuthorizationParameters += @{ MasterKey = $MasterKey }
+    } elseif ($AccessToken) {
+        $AuthorizationParameters += @{ AccessToken = $AccessToken }
+    }
+    $Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
+
     $Headers = @{
         'accept'                       = 'application/json'
-        'authorization'                = $AuthorizationKey
+        'authorization'                = $Authorization
         'cache-control'                = 'no-cache'
         'content-type'                 = 'application/json'
         'x-ms-date'                    = $Date
@@ -77,27 +106,39 @@ function New-CosmosDocument {
     }
 
     # Add Partition Key
-    Write-Verbose "Add PartitionKey [$PartitionKey] to document"
-    Add-Member -InputObject $Document -MemberType NoteProperty -Name $PartitionKey -Value $PartitionKeyValue
+    try {
+        Write-Verbose 'Add PartitionKey property to document'
+        Add-Member -InputObject $Document -MemberType NoteProperty -Name $PartitionKey -Value $PartitionKeyValue
+    }
+    catch {
+        Write-Error "Error adding PartitionKey property to document: $_"
+    }
 
     # Add Document ID
-    if ($Document.id) {
-        $Document.PSObject.Properties.Remove('id')
+    try {
+        if ($Document.id) {
+            Write-Verbose 'Remove existing ID property from PSCustomObject'
+            $Document.PSObject.Properties.Remove('id')
+        }
+        Write-Verbose 'Add ID property with provided DocumentId value to document'
+        Add-Member -InputObject $Document -MemberType NoteProperty -Name 'id' -Value $DocumentId
+    } catch {
+        Write-Error "Error adding or updating ID property of document: $_"
     }
-    Write-Verbose "Add ID [$DocumentId] to document"
-    Add-Member -InputObject $Document -MemberType NoteProperty -Name 'id' -Value $DocumentId
 
     # Send request to NoSQL REST API
     try {
-        Write-Verbose "Insert document into Collection [$ResourceId]"
-        $Response = Invoke-RestMethod -Uri "$Endpoint$ResourceId/$ResourceType" -Headers $Headers -Method Post -Body ($Document | ConvertTo-Json -Depth 15)
-        @{
+        Write-Verbose "Insert Cosmos DB NosQL document with ID [$DocumentId] into Collection [$ResourceId]"
+        $Response = Invoke-RestMethod -Method Post -Uri "$Endpoint$ResourceId/$ResourceType/$DocumentId" -Headers $Headers -Body ($Document | ConvertTo-Json -Depth $JsonDocumentDepth)
+        $OutputObject = [pscustomobject]@{
             etag              = $Response.'_etag'
             id                = $Response.id
             partitionKey      = $PartitionKey
             partitionKeyValue = $Response.partitionKey
             timestamp         = $Response.'_ts'
         }
+
+        return $OutputObject
     } catch {
         Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
