@@ -7,9 +7,20 @@ function Remove-CosmosDocument {
         .LINK
             New-CosmosRequestAuthorizationSignature
         .EXAMPLE
+            # Master Key Authentication
             $RemoveDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
                 MasterKey         = $MasterKey
+                ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
+                PartitionKeyValue = $PartitionKeyValue
+                DocumentId        = $DocumentId
+            }
+            Remove-CosmosDocument @RemoveDocParams
+        .EXAMPLE
+            # Entra ID Authentication
+            $RemoveDocParams = @{
+                Endpoint          = 'https://xxxxx.documents.azure.com:443/'
+                AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
                 ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
                 PartitionKeyValue = $PartitionKeyValue
                 DocumentId        = $DocumentId

@@ -7,9 +7,22 @@ function New-CosmosDocument {
         .LINK
             New-CosmosRequestAuthorizationSignature
         .EXAMPLE
+            # Master Key Authentication
             $NewDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
                 MasterKey         = $MasterKey
+                ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
+                PartitionKey      = $PartitionKey
+                PartitionKeyValue = $PartitionKeyValue
+                Document          = @{property1 = 'value1'; property2 = @('value1', 'value2')} # Any valid PSObject or hashtable
+                DocumentId        = (New-Guid).Guid
+            }
+            New-CosmosDocument @NewDocParams
+        .EXAMPLE
+            # Entra ID Authentication
+            $NewDocParams = @{
+                Endpoint          = 'https://xxxxx.documents.azure.com:443/'
+                AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
                 ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
                 PartitionKey      = $PartitionKey
                 PartitionKeyValue = $PartitionKeyValue

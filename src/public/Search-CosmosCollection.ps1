@@ -7,6 +7,7 @@ function Search-CosmosCollection {
         .LINK
             New-CosmosRequestAuthorizationSignature
         .EXAMPLE
+            # Master Key Authentication (shown with query parameters)
             $Query = @{
                 query      = 'SELECT * FROM c WHERE c[@PartitionKey] = @PartitionKeyValue'
                 parameters = @(
@@ -21,10 +22,23 @@ function Search-CosmosCollection {
                 )
             }
             $QueryDocParams = @{
-                Endpoint          = 'https://xxxxx.documents.azure.com:443/'
-                MasterKey         = $MasterKey
-                ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
-                Query             = $Query
+                Endpoint   = 'https://xxxxx.documents.azure.com:443/'
+                MasterKey  = $MasterKey
+                ResourceId = "dbs/$DatabaseId/colls/$CollectionId"
+                Query      = $Query
+            }
+            Search-CosmosCollection @QueryDocParams
+        .EXAMPLE
+            # Entra ID Authentication (shown without query parameters)
+            $Query = @{
+                query = 'SELECT * FROM c'
+            }
+            $QueryDocParams = @{
+                Endpoint     = 'https://xxxxx.documents.azure.com:443/'
+                AccessToken  = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
+                ResourceId   = "dbs/$DatabaseId/colls/$CollectionId"
+                Query        = $Query
+                PartitionKey = $PartitionKey
             }
             Search-CosmosCollection @QueryDocParams
     #>
