@@ -47,11 +47,11 @@ function Get-CosmosDocument {
     )
 
     # Calculate current date for use in Authorization header
-    $Date = [DateTime]::UtcNow.ToString('r')
+    $private:Date = [DateTime]::UtcNow.ToString('r')
 
     # Compute Authorization header value and define headers dictionary
     $AuthorizationParameters = @{
-        Date       = $Date
+        Date       = $private:Date
         Method     = 'Get'
         ResourceId = "$ResourceId/$ResourceType/$DocumentId"
     }
@@ -60,14 +60,14 @@ function Get-CosmosDocument {
     } elseif ($AccessToken) {
         $AuthorizationParameters += @{ AccessToken = $AccessToken }
     }
-    $Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
+    $private:Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
 
-    $Headers = @{
+    $private:Headers = @{
         'accept'                       = 'application/json'
-        'authorization'                = $Authorization
+        'authorization'                = $private:Authorization
         'cache-control'                = 'no-cache'
         'content-type'                 = 'application/json'
-        'x-ms-date'                    = $Date
+        'x-ms-date'                    = $private:Date
         'x-ms-documentdb-partitionkey' = "[`"$PartitionKeyValue`"]"
         'x-ms-version'                 = '2018-12-31'
     }
@@ -75,9 +75,10 @@ function Get-CosmosDocument {
     # Send request to NoSQL REST API
     try {
         Write-Verbose "Get Cosmos DB NoSQL document with ID [$DocumentId] from Collection [$ResourceId]"
-        $Document = Invoke-RestMethod -Method Get -Uri "$Endpoint$ResourceId/$ResourceType/$DocumentId" -Headers $Headers
+        $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType/$DocumentId" -replace '(?<!(http:|https:))//+', '/'
+        $private:Document = Invoke-RestMethod -Method Get -Uri $private:RequestUri -Headers $private:Headers
 
-        return $Document
+        return $private:Document
     } catch {
         Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }

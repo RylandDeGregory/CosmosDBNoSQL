@@ -53,8 +53,8 @@ function Search-CosmosCollection {
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [pscustomobject] $Query,
 
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [Parameter(ParameterSetName = 'Master Key', Mandatory)]
+        [Parameter(ParameterSetName = 'Entra ID')]
+        [Parameter(ParameterSetName = 'Master Key')]
         [string] $PartitionKey,
 
         [Parameter(ParameterSetName = 'Entra ID')]
@@ -78,11 +78,11 @@ function Search-CosmosCollection {
     $Page = 1
 
     # Calculate current date for use in Authorization header
-    $Date = [DateTime]::UtcNow.ToString('r')
+    $private:Date = [DateTime]::UtcNow.ToString('r')
 
     # Compute authorization header value
     $AuthorizationParameters = @{
-        Date       = $Date
+        Date       = $private:Date
         Method     = 'Post'
         ResourceId = $ResourceId
     }
@@ -91,15 +91,15 @@ function Search-CosmosCollection {
     } elseif ($AccessToken) {
         $AuthorizationParameters += @{ AccessToken = $AccessToken }
     }
-    $Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
+    $private:Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
 
     # Define Cosmos DB API request headers
-    $Headers = @{
+    $private:Headers = @{
         'accept'                                     = 'application/json'
-        'authorization'                              = $Authorization
+        'authorization'                              = $private:Authorization
         'cache-control'                              = 'no-cache'
         'content-type'                               = 'application/query+json'
-        'x-ms-date'                                  = $Date
+        'x-ms-date'                                  = $private:Date
         'x-ms-documentdb-isquery'                    = 'True'
         'x-ms-documentdb-query-enablecrosspartition' = $CrossPartitionQuery
         'x-ms-version'                               = '2018-12-31'
@@ -107,33 +107,34 @@ function Search-CosmosCollection {
     }
 
     if ($PartitionKey) {
-        $Headers['x-ms-documentdb-partitionkey'] = "[`"$PartitionKey`"]"
+        $private:Headers['x-ms-documentdb-partitionkey'] = "[`"$PartitionKey`"]"
     }
 
     Write-Verbose "Query Cosmos DB Collection [$ResourceId] for documents"
-    $Documents = do {
+    $private:Documents = do {
         # Add continuation token to headers if it is not null
         if ($ContinuationToken) {
-            $Headers['x-ms-continuation'] = $ContinuationToken
+            $private:Headers['x-ms-continuation'] = $ContinuationToken
             Write-Verbose "Page $Page ContinuationToken: $ContinuationToken"
             $Page++
         }
 
         # Send request to NoSQL REST API
         try {
-            $Response = Invoke-WebRequest -Method Post -Uri "$Endpoint$ResourceId/$ResourceType" -Headers $Headers -Body ($Query | ConvertTo-Json) -ProgressAction SilentlyContinue
+            $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType" -replace '(?<!(http:|https:))//+', '/'
+            $private:Response = Invoke-WebRequest -Method Post -Uri $private:RequestUri -Headers $private:Headers -Body ($Query | ConvertTo-Json) -ProgressAction SilentlyContinue
         } catch {
             Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
             break
         }
 
         # Get continuation token from response headers
-        $ContinuationToken = [string]$Response.Headers.'x-ms-continuation'
+        $ContinuationToken = [string]$private:Response.Headers.'x-ms-continuation'
 
         # Convert JSON response to PowerShell object
-        $Response.Content | ConvertFrom-Json | Select-Object -ExpandProperty Documents
+        $private:Response.Content | ConvertFrom-Json | Select-Object -ExpandProperty Documents
     } while ($ContinuationToken)
 
     # Return array of documents
-    return $Documents
+    return $private:Documents
 }

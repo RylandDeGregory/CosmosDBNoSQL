@@ -74,11 +74,11 @@ function New-CosmosDocument {
     )
 
     # Calculate current date for use in Authorization header
-    $Date = [DateTime]::UtcNow.ToString('r')
+    $private:Date = [DateTime]::UtcNow.ToString('r')
 
     # Compute Authorization header value and define headers dictionary
     $AuthorizationParameters = @{
-        Date       = $Date
+        Date       = $private:Date
         Method     = 'Post'
         ResourceId = $ResourceId
     }
@@ -87,58 +87,66 @@ function New-CosmosDocument {
     } elseif ($AccessToken) {
         $AuthorizationParameters += @{ AccessToken = $AccessToken }
     }
-    $Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
+    $private:Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
 
-    $Headers = @{
+    $private:Headers = @{
         'accept'                       = 'application/json'
-        'authorization'                = $Authorization
+        'authorization'                = $private:Authorization
         'cache-control'                = 'no-cache'
         'content-type'                 = 'application/json'
-        'x-ms-date'                    = $Date
+        'x-ms-date'                    = $private:Date
         'x-ms-documentdb-partitionkey' = "[`"$PartitionKeyValue`"]"
         'x-ms-version'                 = '2018-12-31'
     }
     if ($IsUpsert) {
-        $Headers += @{ 'x-ms-documentdb-is-upsert' = $true }
+        $private:Headers += @{ 'x-ms-documentdb-is-upsert' = $true }
     }
     if ($HashDocumentId) {
-        $DocumentId = New-Sha256HashedString -String $DocumentId
+        $private:DocumentId = New-Sha256HashedString -String $DocumentId
+    } else {
+        $private:DocumentId = $DocumentId
     }
 
+    # Create function-local instance of variable
+    $private:CosmosDocument = $Document
+
     # Add Partition Key
-    try {
-        Write-Verbose 'Add PartitionKey property to document'
-        Add-Member -InputObject $Document -MemberType NoteProperty -Name $PartitionKey -Value $PartitionKeyValue
-    }
-    catch {
-        Write-Error "Error adding PartitionKey property to document: $_"
+    if ($private:CosmosDocument.$PartitionKey -cne $PartitionKeyValue) {
+        try {
+            Write-Verbose "Add Partition Key property [$PartitionKey] with value [$PartitionKeyValue] to document"
+            Add-Member -InputObject $private:CosmosDocument -MemberType NoteProperty -Name $PartitionKey -Value $PartitionKeyValue -Force
+        } catch {
+            Write-Error "Error adding PartitionKey property to document: $_"
+        }
     }
 
     # Add Document ID
     try {
-        if ($Document.id) {
+        if ($private:CosmosDocument.id) {
             Write-Verbose 'Remove existing ID property from PSCustomObject'
-            $Document.PSObject.Properties.Remove('id')
+            $private:CosmosDocument.PSObject.Properties.Remove('id')
         }
-        Write-Verbose 'Add ID property with provided DocumentId value to document'
-        Add-Member -InputObject $Document -MemberType NoteProperty -Name 'id' -Value $DocumentId
+        Write-Verbose "Add ID property with value [$private:DocumentId] to document"
+        Add-Member -InputObject $private:CosmosDocument -MemberType NoteProperty -Name 'id' -Value $private:DocumentId -Force
     } catch {
         Write-Error "Error adding or updating ID property of document: $_"
     }
 
     # Send request to NoSQL REST API
     try {
-        Write-Verbose "Insert Cosmos DB NosQL document with ID [$DocumentId] into Collection [$ResourceId]"
-        $Response = Invoke-RestMethod -Method Post -Uri "$Endpoint$ResourceId/$ResourceType/$DocumentId" -Headers $Headers -Body ($Document | ConvertTo-Json -Depth $JsonDocumentDepth)
-        $OutputObject = [pscustomobject]@{
-            etag              = $Response.'_etag'
-            id                = $Response.id
+        Write-Verbose "Insert Cosmos DB NosQL document with ID [$private:DocumentId] into Collection [$ResourceId]"
+        $private:Body = $private:CosmosDocument | ConvertTo-Json -Depth $JsonDocumentDepth
+        $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType/$private:DocumentId" -replace '(?<!(http:|https:))//+', '/'
+        $private:Response = Invoke-RestMethod -Method Post -Uri $private:RequestUri -Headers $private:Headers -Body $private:Body
+        $private:OutputObject = [pscustomobject]@{
+            etag              = $private:Response.'_etag'
+            id                = $private:Response.id
             partitionKey      = $PartitionKey
-            partitionKeyValue = $Response.partitionKey
-            timestamp         = $Response.'_ts'
+            partitionKeyValue = $private:Response.$PartitionKey
+            timestamp         = $private:Response.'_ts'
         }
 
-        return $OutputObject
+        return $private:OutputObject
     } catch {
         Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
