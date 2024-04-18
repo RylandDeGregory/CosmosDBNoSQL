@@ -149,7 +149,7 @@ function New-CosmosDocument {
     try {
         Write-Verbose "Insert Cosmos DB NosQL document with ID [$private:DocumentId] into Collection [$ResourceId]"
         $private:Body = $private:CosmosDocument | ConvertTo-Json -Depth $JsonDocumentDepth
-        $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType/$private:DocumentId" -replace '(?<!(http:|https:))//+', '/'
+        $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType" -replace '(?<!(http:|https:))//+', '/'
         $private:Response = Invoke-RestMethod -Method Post -Uri $private:RequestUri -Headers $private:Headers -Body $private:Body
         $private:OutputObject = [pscustomobject]@{
             etag              = $private:Response.'_etag'
