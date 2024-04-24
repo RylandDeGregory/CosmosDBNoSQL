@@ -94,7 +94,7 @@
     # List of all files packaged with this module
     FileList = @(
         '.\private\New-CosmosRequestAuthorizationSignature.ps1',
-        '.\private\New-Sha256HashedString.ps1',
+        '.\private\New-HashedString.ps1',
         '.\public\Get-CosmosDocument.ps1',
         '.\public\New-CosmosDocument.ps1',
         '.\public\Remove-CosmosDocument.ps1',

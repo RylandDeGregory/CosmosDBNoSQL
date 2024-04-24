@@ -115,7 +115,7 @@ function New-CosmosDocument {
         $private:Headers += @{ 'x-ms-documentdb-is-upsert' = $true }
     }
     if ($HashDocumentId) {
-        $private:DocumentId = New-Sha256HashedString -String $DocumentId
+        $private:DocumentId = New-HashedString -String $DocumentId
     } else {
         $private:DocumentId = $DocumentId
     }
