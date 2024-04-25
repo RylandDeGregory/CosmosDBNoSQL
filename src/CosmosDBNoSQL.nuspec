@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>CosmosDBNoSQL</id>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <authors>Ryland DeGregory</authors>
     <description>Interact with the Azure Cosmos DB NoSQL REST API using PowerShell</description>
     <copyright>(c) Ryland DeGregory 2024</copyright>
