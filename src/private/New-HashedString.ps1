@@ -17,11 +17,11 @@ function New-HashedString {
         [string] $String,
 
         [Parameter()]
-        [ValidateSet('MD5', 'SHA1', 'SHA256')]
+        [ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512')]
         [string] $Algorithm = 'SHA256'
     )
 
-    Write-Verbose 'Generating SHA256 Hashed String'
+    Write-Verbose "Generating [$Algorithm] Hashed String"
 
     $HashAlgorithm = [System.Security.Cryptography.HashAlgorithm]::Create($Algorithm)
     $HashedBytes   = $HashAlgorithm.ComputeHash([Text.Encoding]::UTF8.GetBytes($String))
