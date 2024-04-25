@@ -9,6 +9,11 @@ trigger:
     exclude:
       - README.md
 
+parameters:
+  - name: MajorVersion
+    type: boolean
+    default: false
+
 pool:
   vmImage: 'windows-latest'
 
@@ -104,7 +109,7 @@ stages:
               targetType: 'inline'
               pwsh: true
               failOnStderr: false
-              script: Invoke-Build -Task Build -Configuration Release -SourceLocation $(module.SourceLocation)
+              script: Invoke-Build -Task Build -Configuration Release -SourceLocation $(module.SourceLocation) -NewMajorVersion ${{ parameters.MajorVersion }}
               workingDirectory: $(System.DefaultWorkingDirectory)
 
           - task: NuGetCommand@2
