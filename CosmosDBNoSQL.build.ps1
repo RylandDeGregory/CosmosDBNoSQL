@@ -12,7 +12,9 @@ param (
     [string] $Configuration = 'Debug',
     [Parameter(ValueFromPipelineByPropertyName)]
     [ValidateNotNullOrEmpty()]
-    [string] $SourceLocation
+    [string] $SourceLocation,
+    [Parameter()]
+    [bool] $NewMajorVersion = $false
 )
 
 Set-StrictMode -Version Latest
@@ -169,12 +171,20 @@ task GenerateNewModuleVersion -if ($Configuration -eq 'Release') {
         [int]$sourceFunctionsCount = (Get-ChildItem -Path "$moduleSourcePath\public\*.ps1" -Exclude '*.Tests.*' | Measure-Object).Count
         [int]$newFunctionsCount = [System.Math]::Abs($sourceFunctionsCount - $existingFunctionsCount)
 
+        # Increase the major version if a the NewMajorVersion parameter is True
+        if ($NewMajorVersion) {
+            [int]$Major = $Major + 1
+            [int]$Minor = 0
+            [int]$Build = 0
+        }
+
         # Increase the minor number if any new public functions have been added
         if ($newFunctionsCount -gt 0) {
             [int]$Minor = $Minor + 1
             [int]$Build = 0
         }
-        # if not, just increase the build number
+
+        # If not, just increase the build number
         else {
             [int]$Build = $Build + 1
         }
