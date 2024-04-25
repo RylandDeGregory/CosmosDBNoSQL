@@ -38,7 +38,7 @@ function Search-CosmosCollection {
                 AccessToken  = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
                 ResourceId   = "dbs/$DatabaseId/colls/$CollectionId"
                 Query        = $Query
-                PartitionKey = $PartitionKey
+                PartitionKey = $PartitionKeyValue
             }
             Search-CosmosCollection @QueryDocParams
     #>

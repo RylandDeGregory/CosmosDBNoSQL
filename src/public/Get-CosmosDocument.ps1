@@ -18,7 +18,6 @@ function Get-CosmosDocument {
             Get-CosmosDocument @GetDocParams
         .EXAMPLE
             # Entra ID Authentication
-            $AccessToken =
             $GetDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
                 AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
