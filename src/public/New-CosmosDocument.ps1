@@ -77,7 +77,7 @@ function New-CosmosDocument {
         # Whether to hash the Document ID before adding to Cosmos DB
         [Parameter(ParameterSetName = 'Entra ID')]
         [Parameter(ParameterSetName = 'Master Key')]
-        [boolean] $HashDocumentId = $true,
+        [boolean] $HashDocumentId = $false,
 
         # Max depth of the JSON object that will be added to Cosmos DB
         [Parameter(ParameterSetName = 'Entra ID')]
