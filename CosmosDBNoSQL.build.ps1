@@ -176,16 +176,10 @@ task GenerateNewModuleVersion -if ($Configuration -eq 'Release') {
             [int]$Major = $Major + 1
             [int]$Minor = 0
             [int]$Build = 0
-        }
-
-        # Increase the minor number if any new public functions have been added
-        if ($newFunctionsCount -gt 0) {
+        } elseif ($newFunctionsCount -gt 0) { # Increase the minor number if any new public functions have been added
             [int]$Minor = $Minor + 1
             [int]$Build = 0
-        }
-
-        # If not, just increase the build number
-        else {
+        } else { # If not, just increase the build number
             [int]$Build = $Build + 1
         }
 
