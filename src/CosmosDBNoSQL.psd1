@@ -30,7 +30,7 @@
     Copyright = '(c) Ryland DeGregory 2024'
 
     # Description of the functionality provided by this module
-    Description = 'Interact with the Azure CosmosDB NoSQL REST API to manage Documents.'
+    Description = 'Interact with the Azure CosmosDB NoSQL REST API to manage Collections and Documents.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -70,7 +70,9 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
+        'Get-CosmosCollection',
         'Get-CosmosDocument',
+        'New-CosmosCollection',
         'New-CosmosDocument',
         'Remove-CosmosDocument',
         'Search-CosmosCollection'
@@ -95,7 +97,9 @@
     FileList = @(
         '.\private\New-CosmosRequestAuthorizationSignature.ps1',
         '.\private\New-HashedString.ps1',
+        '.\public\Get-CosmosCollection.ps1',
         '.\public\Get-CosmosDocument.ps1',
+        '.\public\New-CosmosCollection.ps1',
         '.\public\New-CosmosDocument.ps1',
         '.\public\Remove-CosmosDocument.ps1',
         '.\public\Search-CosmosCollection.ps1'
