@@ -74,6 +74,7 @@
         'Get-CosmosDocument',
         'New-CosmosCollection',
         'New-CosmosDocument',
+        'Remove-CosmosCollection',
         'Remove-CosmosDocument',
         'Search-CosmosCollection'
     )
@@ -101,6 +102,7 @@
         '.\public\Get-CosmosDocument.ps1',
         '.\public\New-CosmosCollection.ps1',
         '.\public\New-CosmosDocument.ps1',
+        '.\public\Remove-CosmosCollection.ps1',
         '.\public\Remove-CosmosDocument.ps1',
         '.\public\Search-CosmosCollection.ps1'
     )
