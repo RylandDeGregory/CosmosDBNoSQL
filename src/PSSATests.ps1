@@ -4,8 +4,6 @@ $ModuleName = 'CosmosDBNoSQL'
 
 Describe "$ModuleName Module Analysis with PSScriptAnalyzer" {
     BeforeAll {
-        $ModulePath = $here
-        $ModuleName = 'CosmosDBNoSQL'
         # Define PSScriptAnalyzer rules once
         $ScriptAnalyzerRules = Get-ScriptAnalyzerRule | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
     }
@@ -30,14 +28,14 @@ if (Test-Path -Path "$ModulePath\public\*.ps1") {
 }
 
 # Running the analysis for each function
-foreach ($FunctionPath in $FunctionPaths) {
+foreach ($Path in $FunctionPaths) {
 
-    $FunctionName = $FunctionPath.BaseName
+    $FunctionName = $Path.BaseName
 
     Describe "'$FunctionName' Function Analysis with PSScriptAnalyzer" {
         BeforeAll {
             # Define function path for common use
-            $FunctionPath = $FunctionPath.FullName
+            $FunctionPath = $Path.FullName
             $ScriptAnalyzerRules = Get-ScriptAnalyzerRule | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
         }
 

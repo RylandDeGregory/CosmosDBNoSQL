@@ -8,11 +8,10 @@ $ModulePath = "$here\$ModuleName.psm1"
 Import-Module -Name $ModulePath -Force -ErrorAction Stop # Loading module explicitly by path and not via the manifest
 #endregion
 
-Describe "'$ModuleName' Module Tests" {
+Describe "$ModuleName Module Tests" {
     BeforeAll {
         # Define module path for common use
         $ModulePath = "$here\$ModuleName.psm1"
-        $ModuleName = 'CosmosDBNoSQL'
     }
 
     Context 'Module Setup' {
@@ -28,7 +27,7 @@ Describe "'$ModuleName' Module Tests" {
             Test-Path "$here\public\*.ps1" | Should -Be $true
         }
 
-        It 'should be a valid PowerShell code' {
+        It 'should be valid PowerShell code' {
             $PSFile = Get-Content -Path $ModulePath -ErrorAction Stop
             $errors = $null
             $null = [System.Management.Automation.PSParser]::Tokenize($PSFile, [ref]$errors)
@@ -59,14 +58,14 @@ if (Test-Path -Path "$here\public\*.ps1") {
 }
 
 # Running the tests for each function
-foreach ($FunctionPath in $FunctionPaths) {
+foreach ($Path in $FunctionPaths) {
+    $FunctionName = $Path.BaseName
+    $FullPath = $Path.FullName
 
-    $FunctionName = $FunctionPath.BaseName
-
-    Describe "'$FunctionName' Function Tests" {
+    Describe "$FunctionName Function Tests" {
         BeforeAll {
             # Define function path for common use
-            $FunctionPath = $FunctionPath.FullName
+            $FunctionPath = $FullPath
         }
 
         Context 'Function Code Style Tests' {
@@ -80,7 +79,7 @@ foreach ($FunctionPath in $FunctionPaths) {
                 $FunctionPath | Should -FileContentMatch 'Write-Verbose'
             }
 
-            It 'should be a valid PowerShell code' {
+            It 'should be valid PowerShell code' {
                 $PSFile = Get-Content -Path $FunctionPath -ErrorAction Stop
                 $errors = $null
                 $null = [System.Management.Automation.PSParser]::Tokenize($PSFile, [ref]$errors)
@@ -96,8 +95,7 @@ foreach ($FunctionPath in $FunctionPaths) {
         Context 'Function Help Quality Tests' {
             BeforeAll {
                 # Getting function help
-                $AbstractSyntaxTree = [System.Management.Automation.Language.Parser]::
-                ParseFile($FunctionPath, [ref]$null, [ref]$null)
+                $AbstractSyntaxTree = [System.Management.Automation.Language.Parser]::ParseFile($FunctionPath, [ref]$null, [ref]$null)
                 $AstSearchDelegate = { $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }
                 $ParsedFunction = $AbstractSyntaxTree.FindAll($AstSearchDelegate, $true) | Where-Object Name -EQ $FunctionName
                 $FunctionHelp = $ParsedFunction.GetHelpContent()
