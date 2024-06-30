@@ -1,5 +1,5 @@
 @{
     # Build dependencies
-    Pester           = @{ target = 'CurrentUser'; version = '4.10.1' }
+    Pester           = @{ target = 'CurrentUser'; version = '5.6.0' }
     PSScriptAnalyzer = @{ target = 'CurrentUser'; version = 'latest' }
 }

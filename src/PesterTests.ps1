@@ -9,6 +9,10 @@ Import-Module -Name $ModulePath -Force -ErrorAction Stop # Loading module explic
 #endregion
 
 Describe "'$ModuleName' Module Tests" {
+    BeforeAll {
+        # Define module path for common use
+        $ModulePath = "$here\$ModuleName.psm1"
+    }
 
     Context 'Module Setup' {
         It 'should have a root module' {
@@ -53,13 +57,17 @@ if (Test-Path -Path "$here\public\*.ps1") {
     $FunctionPaths += Get-ChildItem -Path "$here\public\*.ps1" -Exclude '*.Tests.*'
 }
 
-
 # Running the tests for each function
 foreach ($FunctionPath in $FunctionPaths) {
 
     $FunctionName = $FunctionPath.BaseName
 
     Describe "'$FunctionName' Function Tests" {
+        BeforeAll {
+            # Define function path for common use
+            $FunctionPath = $FunctionPath.FullName
+        }
+
         Context 'Function Code Style Tests' {
             It 'should be an advanced function' {
                 $FunctionPath | Should -FileContentMatch 'Function'
@@ -85,12 +93,14 @@ foreach ($FunctionPath in $FunctionPaths) {
         }
 
         Context 'Function Help Quality Tests' {
-            # Getting function help
-            $AbstractSyntaxTree = [System.Management.Automation.Language.Parser]::
-            ParseInput((Get-Content -Raw $FunctionPath), [ref]$null, [ref]$null)
-            $AstSearchDelegate = { $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }
-            $ParsedFunction = $AbstractSyntaxTree.FindAll( $AstSearchDelegate, $true ) | Where-Object Name -EQ $FunctionName
-            $FunctionHelp = $ParsedFunction.GetHelpContent()
+            BeforeAll {
+                # Getting function help
+                $AbstractSyntaxTree = [System.Management.Automation.Language.Parser]::
+                ParseFile($FunctionPath, [ref]$null, [ref]$null)
+                $AstSearchDelegate = { $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] }
+                $ParsedFunction = $AbstractSyntaxTree.FindAll($AstSearchDelegate, $true) | Where-Object Name -EQ $FunctionName
+                $FunctionHelp = $ParsedFunction.GetHelpContent()
+            }
 
             It 'should have a SYNOPSIS' {
                 $FunctionHelp.Synopsis | Should -Not -BeNullOrEmpty

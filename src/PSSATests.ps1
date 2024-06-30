@@ -3,16 +3,19 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ModulePath = $here
 $ModuleName = 'CosmosDBNoSQL'
 
-Describe "'$ModuleName' Module Analysis with PSScriptAnalyzer" {
-    Context 'Standard Rules' {
-        # Define PSScriptAnalyzer rules
-        $ScriptAnalyzerRules = Get-ScriptAnalyzerRule | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
+BeforeAll {
+    # Define PSScriptAnalyzer rules once
+    $ScriptAnalyzerRules = Get-ScriptAnalyzerRule | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
+}
 
-        # Perform analysis against each rule
-        foreach ($Rule in $ScriptAnalyzerRules) {
-            It "should pass '$Rule' rule" {
-                Invoke-ScriptAnalyzer -Path "$here\$ModuleName.psm1" -IncludeRule $Rule | Should -BeNullOrEmpty
-            }
+Describe "$ModuleName Module Analysis with PSScriptAnalyzer" {
+    BeforeEach {
+        $ModuleScript = "$ModulePath\$ModuleName.psm1"
+    }
+
+    Context 'Standard Rules' {
+        It "should pass all script analyzer rules" {
+            Invoke-ScriptAnalyzer -Path $ModuleScript -IncludeRule $ScriptAnalyzerRules | Should -BeNullOrEmpty
         }
     }
 }
@@ -30,16 +33,14 @@ if (Test-Path -Path "$ModulePath\public\*.ps1") {
 foreach ($FunctionPath in $FunctionPaths) {
     $FunctionName = $FunctionPath.BaseName
 
-    Describe "'$FunctionName' Function Analysis with PSScriptAnalyzer" {
-        Context 'Standard Rules' {
-            # Define PSScriptAnalyzer rules
+    Describe "$FunctionName Function Analysis with PSScriptAnalyzer" {
+        BeforeEach {
             $ScriptAnalyzerRules = Get-ScriptAnalyzerRule | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
+        }
 
-            # Perform analysis against each rule
-            foreach ($Rule in $ScriptAnalyzerRules) {
-                It "should pass '$Rule' rule" {
-                    Invoke-ScriptAnalyzer -Path $FunctionPath -IncludeRule $Rule | Should -BeNullOrEmpty
-                }
+        Context 'Standard Rules' {
+            It "should pass all script analyzer rules" {
+                Invoke-ScriptAnalyzer -Path $FunctionPath -IncludeRule $ScriptAnalyzerRules | Should -BeNullOrEmpty
             }
         }
     }
