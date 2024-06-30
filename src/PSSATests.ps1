@@ -1,14 +1,14 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-
 $ModulePath = $here
 $ModuleName = 'CosmosDBNoSQL'
 
-BeforeAll {
-    # Define PSScriptAnalyzer rules once
-    $ScriptAnalyzerRules = Get-ScriptAnalyzerRule | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
-}
-
 Describe "$ModuleName Module Analysis with PSScriptAnalyzer" {
+    BeforeAll {
+        $ModulePath = $here
+        $ModuleName = 'CosmosDBNoSQL'
+        # Define PSScriptAnalyzer rules once
+        $ScriptAnalyzerRules = Get-ScriptAnalyzerRule | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
+    }
     BeforeEach {
         $ModuleScript = "$ModulePath\$ModuleName.psm1"
     }
@@ -31,10 +31,13 @@ if (Test-Path -Path "$ModulePath\public\*.ps1") {
 
 # Running the analysis for each function
 foreach ($FunctionPath in $FunctionPaths) {
+
     $FunctionName = $FunctionPath.BaseName
 
-    Describe "$FunctionName Function Analysis with PSScriptAnalyzer" {
-        BeforeEach {
+    Describe "'$FunctionName' Function Analysis with PSScriptAnalyzer" {
+        BeforeAll {
+            # Define function path for common use
+            $FunctionPath = $FunctionPath.FullName
             $ScriptAnalyzerRules = Get-ScriptAnalyzerRule | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
         }
 

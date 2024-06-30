@@ -12,6 +12,7 @@ Describe "'$ModuleName' Module Tests" {
     BeforeAll {
         # Define module path for common use
         $ModulePath = "$here\$ModuleName.psm1"
+        $ModuleName = 'CosmosDBNoSQL'
     }
 
     Context 'Module Setup' {
