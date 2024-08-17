@@ -58,7 +58,7 @@ function Get-CosmosCollection {
     $AuthorizationParameters = @{
         Date         = $private:Date
         Method       = 'Get'
-        ResourceId   = $ResourceId
+        ResourceId   = "$ResourceId/$ResourceType/$CollectionId"
         ResourceType = $ResourceType
     }
     if ($MasterKey) {
@@ -92,7 +92,7 @@ function Get-CosmosCollection {
 
         return $private:OutputObject
     } catch {
-        throw $_.Exception
+        throw $_
         # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }

@@ -1,4 +1,4 @@
-function Get-CosmosCollection {
+function Remove-CosmosCollection {
     <#
         .SYNOPSIS
             Remove a Cosmos DB collection with the provided name.
@@ -14,7 +14,7 @@ function Get-CosmosCollection {
                 ResourceId   = "dbs/$DatabaseId"
                 CollectionId = 'MyCollection'
             }
-            Remove-CosmosCollection @GetCollectionParams
+            Remove-CosmosCollection @RemoveCollectionParams
         .EXAMPLE
             # Entra ID Authentication
             $RemoveCollectionParams = @{
@@ -23,7 +23,7 @@ function Get-CosmosCollection {
                 ResourceId   = "dbs/$DatabaseId"
                 CollectionId = 'MyCollection'
             }
-            Remove-CosmosCollection @GetCollectionParams
+            Remove-CosmosCollection @RemoveCollectionParams
     #>
     [OutputType([pscustomobject])]
     [CmdletBinding(DefaultParameterSetName = 'Master Key')]
@@ -58,7 +58,7 @@ function Get-CosmosCollection {
     $AuthorizationParameters = @{
         Date         = $private:Date
         Method       = 'Delete'
-        ResourceId   = $ResourceId
+        ResourceId   = "$ResourceId/$ResourceType/$CollectionId"
         ResourceType = $ResourceType
     }
     if ($MasterKey) {
