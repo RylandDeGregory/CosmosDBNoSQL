@@ -84,10 +84,13 @@ function Remove-CosmosDocument {
 
     # Send request to NoSQL REST API
     try {
+        $ProgressPreference = 'SilentlyContinue'
         Write-Verbose "Remove Cosmos DB NoSQL document with ID [$DocumentId] from Collection [$ResourceId]"
         $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType/$DocumentId" -replace '(?<!(http:|https:))//+', '/'
         $null = Invoke-RestMethod -Method Delete -Uri $private:RequestUri -Headers $private:Headers
+        $ProgressPreference = 'Continue'
     } catch {
-        Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
+        throw $_.Exception
+        # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }

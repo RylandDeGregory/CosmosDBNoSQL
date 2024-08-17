@@ -85,12 +85,15 @@ function Get-CosmosDocument {
 
     # Send request to NoSQL REST API
     try {
+        $ProgressPreference = 'SilentlyContinue'
         Write-Verbose "Get Cosmos DB NoSQL document with ID [$DocumentId] from Collection [$ResourceId]"
         $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType/$DocumentId" -replace '(?<!(http:|https:))//+', '/'
         $private:Document = Invoke-RestMethod -Method Get -Uri $private:RequestUri -Headers $private:Headers
+        $ProgressPreference = 'Continue'
 
         return $private:Document
     } catch {
-        Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
+        throw $_.Exception
+        # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }

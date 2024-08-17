@@ -147,6 +147,7 @@ function New-CosmosDocument {
 
     # Send request to NoSQL REST API
     try {
+        $ProgressPreference = 'SilentlyContinue'
         Write-Verbose "Insert Cosmos DB NosQL document with ID [$private:DocumentId] into Collection [$ResourceId]"
         $private:Body = $private:CosmosDocument | ConvertTo-Json -Depth $JsonDocumentDepth
         $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType" -replace '(?<!(http:|https:))//+', '/'
@@ -158,9 +159,11 @@ function New-CosmosDocument {
             partitionKeyValue = $private:Response.$PartitionKey
             timestamp         = $private:Response.'_ts'
         }
+        $ProgressPreference = 'Continue'
 
         return $private:OutputObject
     } catch {
-        Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
+        throw $_.Exception
+        # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }
