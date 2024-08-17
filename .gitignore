@@ -1,0 +1,7 @@
+# Azurite artifacts
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
+
+# MacOS artifacts
+.DS_Store
