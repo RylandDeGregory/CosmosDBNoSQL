@@ -9,24 +9,50 @@ function New-HashedString {
             New-HashedString -String 'Hello'
         .EXAMPLE
             New-HashedString -String 'Hello' -Algorithm 'SHA1'
+        .EXAMPLE
+            New-HashedString -String 'Hello' -Algorithm 'SHA256' -OutputType 'Base64'
     #>
     [OutputType([string])]
     [CmdletBinding()]
     param (
+        # The string to hash
         [Parameter(Mandatory)]
         [string] $String,
 
+        # The hashing algorithm to use
         [Parameter()]
-        [ValidateSet('MD5', 'SHA1', 'SHA256', 'SHA384', 'SHA512')]
-        [string] $Algorithm = 'SHA256'
+        [ValidateSet('MD5', 'SHA1', 'SHA256')]
+        [string] $Algorithm = 'SHA256',
+
+        # The output format of the hashed string
+        [Parameter()]
+        [ValidateSet('String', 'Base64')]
+        [string] $OutputType = 'String'
     )
 
-    Write-Verbose "Generating [$Algorithm] Hashed String"
+    try {
+        Write-Verbose "Generating [$Algorithm] Hashed String"
+        $HashAlgorithm = [System.Security.Cryptography.HashAlgorithm]::Create($Algorithm)
+        $HashedBytes   = $HashAlgorithm.ComputeHash([Text.Encoding]::UTF8.GetBytes($String))
+    } catch {
+        Write-Error "Failed generating [$Algorithm] hashed string: $_"
+    } finally {
+        $HashAlgorithm.Dispose()
+    }
 
-    $HashAlgorithm = [System.Security.Cryptography.HashAlgorithm]::Create($Algorithm)
-    $HashedBytes   = $HashAlgorithm.ComputeHash([Text.Encoding]::UTF8.GetBytes($String))
-    $HashedString  = [BitConverter]::ToString($HashedBytes) -replace '-', ''
-    $HashAlgorithm.Dispose()
-
-    return $HashedString.ToLower()
+    try {
+        Write-Verbose "Converting [$Algorithm] Hashed Bytes to [$OutputType] format"
+        switch ($OutputType) {
+            'String' {
+                $HashedString = [BitConverter]::ToString($HashedBytes) -replace '-', ''
+                return $HashedString.ToLower()
+            }
+            'Base64' {
+                $HashedString = [Convert]::ToBase64String($HashedBytes)
+                return $HashedString
+            }
+        }
+    } catch {
+        Write-Error "Failed converting [$Algorithm] Hashed Bytes to [$OutputType] format: $_"
+    }
 }
