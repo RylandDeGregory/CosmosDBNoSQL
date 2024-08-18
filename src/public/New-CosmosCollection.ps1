@@ -4,6 +4,9 @@ function New-CosmosCollection {
             Create a new collection in Cosmos DB with the provided name and partition key.
         .DESCRIPTION
             Create a new Cosmos DB Collection. See: https://learn.microsoft.com/en-us/rest/api/cosmos-db/create-a-collection
+        .NOTES
+            Cosmos DB SQL Data Plane does not support management operations using Entra ID Authentication.
+            See: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-rbac#permission-model
         .LINK
             New-CosmosRequestAuthorizationSignature
         .EXAMPLE
@@ -16,43 +19,25 @@ function New-CosmosCollection {
                 PartitionKey = 'MyPartitionKey'
             }
             New-CosmosCollection @NewCollectionParams
-        .EXAMPLE
-            # Entra ID Authentication
-            $NewCollectionParams = @{
-                Endpoint     = 'https://xxxxx.documents.azure.com:443/'
-                AccessToken  = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
-                ResourceId   = "dbs/$DatabaseId"
-                CollectionId = 'MyCollection'
-                PartitionKey = 'MyPartitionKey'
-            }
-            New-CosmosCollection @NewCollectionParams
     #>
     [OutputType([pscustomobject])]
     [CmdletBinding(DefaultParameterSetName = 'Master Key')]
     param (
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $Endpoint,
 
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $MasterKey,
 
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [string] $AccessToken,
-
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $ResourceId,
 
-        [Parameter(ParameterSetName = 'Entra ID')]
         [Parameter(ParameterSetName = 'Master Key')]
         [string] $ResourceType = 'colls',
 
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $CollectionId,
 
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $PartitionKey
     )
@@ -63,14 +48,10 @@ function New-CosmosCollection {
     # Compute Authorization header value and define headers dictionary
     $AuthorizationParameters = @{
         Date         = $private:Date
+        MasterKey    = $MasterKey
         Method       = 'Post'
         ResourceId   = $ResourceId
         ResourceType = $ResourceType
-    }
-    if ($MasterKey) {
-        $AuthorizationParameters += @{ MasterKey = $MasterKey }
-    } elseif ($AccessToken) {
-        $AuthorizationParameters += @{ AccessToken = $AccessToken }
     }
     $private:Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
 

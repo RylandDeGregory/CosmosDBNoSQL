@@ -4,6 +4,9 @@ function Remove-CosmosCollection {
             Remove a Cosmos DB collection with the provided name.
         .DESCRIPTION
             Delete a Cosmos DB collection by name. See: https://learn.microsoft.com/en-us/rest/api/cosmos-db/delete-a-collection
+        .NOTES
+            Cosmos DB SQL Data Plane does not support management operations using Entra ID Authentication.
+            See: https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-setup-rbac#permission-model
         .LINK
             New-CosmosRequestAuthorizationSignature
         .EXAMPLE
@@ -15,38 +18,22 @@ function Remove-CosmosCollection {
                 CollectionId = 'MyCollection'
             }
             Remove-CosmosCollection @RemoveCollectionParams
-        .EXAMPLE
-            # Entra ID Authentication
-            $RemoveCollectionParams = @{
-                Endpoint     = 'https://xxxxx.documents.azure.com:443/'
-                AccessToken  = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
-                ResourceId   = "dbs/$DatabaseId"
-                CollectionId = 'MyCollection'
-            }
-            Remove-CosmosCollection @RemoveCollectionParams
     #>
     [OutputType([pscustomobject])]
     [CmdletBinding(DefaultParameterSetName = 'Master Key')]
     param (
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $Endpoint,
 
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $MasterKey,
 
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [string] $AccessToken,
-
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $ResourceId,
 
-        [Parameter(ParameterSetName = 'Entra ID')]
         [Parameter(ParameterSetName = 'Master Key')]
         [string] $ResourceType = 'colls',
 
-        [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
         [string] $CollectionId
     )
@@ -57,14 +44,10 @@ function Remove-CosmosCollection {
     # Compute Authorization header value and define headers dictionary
     $AuthorizationParameters = @{
         Date         = $private:Date
+        MasterKey    = $MasterKey
         Method       = 'Delete'
         ResourceId   = "$ResourceId/$ResourceType/$CollectionId"
         ResourceType = $ResourceType
-    }
-    if ($MasterKey) {
-        $AuthorizationParameters += @{ MasterKey = $MasterKey }
-    } elseif ($AccessToken) {
-        $AuthorizationParameters += @{ AccessToken = $AccessToken }
     }
     $private:Authorization = New-CosmosRequestAuthorizationSignature @AuthorizationParameters
 
