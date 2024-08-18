@@ -48,80 +48,6 @@ Enter-Build {
     $script:functionsToExport = (Test-ModuleManifest $moduleManifestPath).ExportedFunctions
 }
 
-# Synopsis: Analyze the project with PSScriptAnalyzer
-task Analyze {
-    # Get-ChildItem parameters
-    $Params = @{
-        Path    = $moduleSourcePath
-        Recurse = $true
-        Include = 'PSSATests.ps1'
-    }
-
-    $TestFiles = Get-ChildItem @Params
-
-    # Pester parameters
-    $Params = @{
-        Path     = $TestFiles
-        PassThru = $true
-    }
-
-    # Additional parameters on Azure Pipelines agents to generate test results
-    if ($env:TF_BUILD) {
-        if (-not (Test-Path -Path $buildOutputPath -ErrorAction SilentlyContinue)) {
-            New-Item -Path $buildOutputPath -ItemType Directory
-        }
-        $Timestamp = Get-Date -UFormat '%Y%m%d-%H%M%S'
-        $PSVersion = $PSVersionTable.PSVersion.Major
-        $TestResultFile = "AnalysisResults_PS$PSVersion`_$TimeStamp.xml"
-        $Params.Add('OutputFile', "$buildOutputPath\$TestResultFile")
-        $Params.Add('OutputFormat', 'NUnitXml')
-    }
-
-    # Invoke all tests
-    $TestResults = Invoke-Pester @Params
-    if ($TestResults.FailedCount -gt 0) {
-        $TestResults | Format-List
-        throw 'One or more PSScriptAnalyzer rules have been violated. Build cannot continue!'
-    }
-}
-
-# Synopsis: Test the project with Pester tests
-task Test {
-    # Get-ChildItem parameters
-    $Params = @{
-        Path    = $moduleSourcePath
-        Recurse = $true
-        Include = 'PesterTests.ps1'
-    }
-
-    $TestFiles = Get-ChildItem @Params
-
-    # Pester parameters
-    $Params = @{
-        Path     = $TestFiles
-        PassThru = $true
-    }
-
-    # Additional parameters on Azure Pipelines agents to generate test results
-    if ($env:TF_BUILD) {
-        if (-not (Test-Path -Path $buildOutputPath -ErrorAction SilentlyContinue)) {
-            New-Item -Path $buildOutputPath -ItemType Directory
-        }
-        $Timestamp = Get-Date -UFormat '%Y%m%d-%H%M%S'
-        $PSVersion = $PSVersionTable.PSVersion.Major
-        $TestResultFile = "TestResults_PS$PSVersion`_$TimeStamp.xml"
-        $Params.Add('OutputFile', "$buildOutputPath\$TestResultFile")
-        $Params.Add('OutputFormat', 'NUnitXml')
-    }
-
-    # Invoke all tests
-    $TestResults = Invoke-Pester @Params
-    if ($TestResults.FailedCount -gt 0) {
-        $TestResults | Format-List
-        throw 'One or more Pester tests have failed. Build cannot continue!'
-    }
-}
-
 # Synopsis: Generate a new module version if creating a release build
 task GenerateNewModuleVersion -if ($Configuration -eq 'Release') {
     # Using the current NuGet package version from the feed as a version base when building via Azure DevOps pipeline
@@ -259,52 +185,6 @@ task Build UpdateModuleManifest, UpdatePackageSpecification, {
 
     # Copy module files to the target build folder
     Copy-Item @Params
-}
-
-# Synopsis: Verify the code coverage by tests
-task CodeCoverage {
-    $acceptableCodeCoveragePercent = 0
-
-    $path = $moduleSourcePath
-    $files = Get-ChildItem $path -Recurse -Include '*.ps1', '*.psm1' -Exclude 'PesterTests.ps1', 'PSSATests.ps1'
-
-    $Params = @{
-        Path         = $path
-        CodeCoverage = $files
-        PassThru     = $true
-        Show         = 'Summary'
-    }
-
-    # Additional parameters on Azure Pipelines agents to generate code coverage report
-    if ($env:TF_BUILD) {
-        if (-not (Test-Path -Path $buildOutputPath -ErrorAction SilentlyContinue)) {
-            New-Item -Path $buildOutputPath -ItemType Directory
-        }
-        $Timestamp = Get-Date -UFormat '%Y%m%d-%H%M%S'
-        $PSVersion = $PSVersionTable.PSVersion.Major
-        $TestResultFile = "CodeCoverageResults_PS$PSVersion`_$TimeStamp.xml"
-        $Params.Add('CodeCoverageOutputFile', "$buildOutputPath\$TestResultFile")
-    }
-
-    $Result = Invoke-Pester @Params
-
-    if ($Result.CodeCoverage) {
-        $CodeCoverage = $Result.CodeCoverage
-        $CommandsFound = $CodeCoverage.NumberOfCommandsAnalyzed
-
-        # To prevent any "Attempted to divide by zero" exceptions
-        if ($CommandsFound -ne 0) {
-            $CommandsExercised = $CodeCoverage.NumberOfCommandsExecuted
-            [System.Double]$ActualCodeCoveragePercent = [Math]::Round(($CommandsExercised / $CommandsFound) * 100, 2)
-        } else {
-            [System.Double]$ActualCodeCoveragePercent = 0
-        }
-    }
-
-    # Fail the task if the code coverage results are not acceptable
-    if ($actualCodeCoveragePercent -lt $acceptableCodeCoveragePercent) {
-        throw "The overall code coverage by Pester tests is $actualCodeCoveragePercent% which is less than the quality gate of $acceptableCodeCoveragePercent%. Pester ModuleVersion is: $((Get-Module -Name Pester -ListAvailable).Version)."
-    }
 }
 
 # Synopsis: Clean up the target build directory

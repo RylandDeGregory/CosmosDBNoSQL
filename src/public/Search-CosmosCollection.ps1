@@ -35,10 +35,10 @@ function Search-CosmosCollection {
             }
             $QueryDocParams = @{
                 Endpoint     = 'https://xxxxx.documents.azure.com:443/'
-                AccessToken  = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
+                AccessToken  = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '') -AsSecureString).Token
                 ResourceId   = "dbs/$DatabaseId/colls/$CollectionId"
                 Query        = $Query
-                PartitionKey = $PartitionKeyValue
+                PartitionKey = $PartitionKey
             }
             Search-CosmosCollection @QueryDocParams
     #>
@@ -53,7 +53,7 @@ function Search-CosmosCollection {
         [string] $MasterKey,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [string] $AccessToken,
+        [securestring] $AccessToken,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
@@ -135,10 +135,13 @@ function Search-CosmosCollection {
 
         # Send request to NoSQL REST API
         try {
+            $ProgressPreference = 'SilentlyContinue'
             $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType" -replace '(?<!(http:|https:))//+', '/'
-            $private:Response = Invoke-WebRequest -Method Post -Uri $private:RequestUri -Headers $private:Headers -Body ($Query | ConvertTo-Json) -ProgressAction SilentlyContinue
+            $private:Response = Invoke-WebRequest -Method Post -Uri $private:RequestUri -Headers $private:Headers -Body ($Query | ConvertTo-Json)
+            $ProgressPreference = 'Continue'
         } catch {
-            Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
+            throw $_.Exception
+            # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
             break
         }
 

@@ -20,7 +20,7 @@ function Get-CosmosDocument {
             # Entra ID Authentication
             $GetDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
-                AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
+                AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '') -AsSecureString).Token
                 ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
                 PartitionKeyValue = $PartitionKeyValue
                 DocumentId        = $DocumentId
@@ -38,7 +38,7 @@ function Get-CosmosDocument {
         [string] $MasterKey,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [string] $AccessToken,
+        [securestring] $AccessToken,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
@@ -85,12 +85,15 @@ function Get-CosmosDocument {
 
     # Send request to NoSQL REST API
     try {
+        $ProgressPreference = 'SilentlyContinue'
         Write-Verbose "Get Cosmos DB NoSQL document with ID [$DocumentId] from Collection [$ResourceId]"
         $private:RequestUri = "$Endpoint/$ResourceId/$ResourceType/$DocumentId" -replace '(?<!(http:|https:))//+', '/'
         $private:Document = Invoke-RestMethod -Method Get -Uri $private:RequestUri -Headers $private:Headers
+        $ProgressPreference = 'Continue'
 
         return $private:Document
     } catch {
-        Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
+        throw $_.Exception
+        # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }

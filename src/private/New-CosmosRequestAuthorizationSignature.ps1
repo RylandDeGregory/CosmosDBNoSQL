@@ -9,16 +9,16 @@ function New-CosmosRequestAuthorizationSignature {
             # Entra ID Authentication
             $AuthKeyParams = @{
                 Method      = Post
-                ResourceId  = "dbs/$DatabaseId/colls/$CollectionId"
+                ResourceId  = "dbs/MyDatabase/colls/MyCollection"
                 Date        = [DateTime]::UtcNow.ToString('r')
-                AccessToken = $AccessToken
+                AccessToken = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '') -AsSecureString).Token
             }
             $Authorization = New-CosmosRequestAuthorizationSignature @AuthKeyParams
         .EXAMPLE
             # Master Key Authentication
             $AuthKeyParams = @{
                 Method     = Post
-                ResourceId = "dbs/$DatabaseId/colls/$CollectionId"
+                ResourceId = "dbs/MyDatabase/colls/MyCollection"
                 Date       = [DateTime]::UtcNow.ToString('r')
                 MasterKey  = $MasterKey
             }
@@ -54,7 +54,7 @@ function New-CosmosRequestAuthorizationSignature {
         [string] $MasterKey,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [string] $AccessToken
+        [securestring] $AccessToken
     )
 
     if ($AccessToken) {
@@ -78,7 +78,7 @@ function New-CosmosRequestAuthorizationSignature {
         }
     } elseif ($KeyType -eq 'aad') {
         # Signature is the Entra ID Access Token
-        $Signature = $AccessToken
+        $Signature = (New-Object System.Management.Automation.PSCredential ('null', $AccessToken)).GetNetworkCredential().Password
     }
 
     try {
