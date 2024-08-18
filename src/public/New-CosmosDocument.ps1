@@ -22,7 +22,7 @@ function New-CosmosDocument {
             # Entra ID Authentication
             $NewDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
-                AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
+                AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '') -AsSecureString).Token
                 ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
                 PartitionKey      = $PartitionKey
                 PartitionKeyValue = $PartitionKeyValue
@@ -42,7 +42,7 @@ function New-CosmosDocument {
         [string] $MasterKey,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [string] $AccessToken,
+        [securestring] $AccessToken,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]

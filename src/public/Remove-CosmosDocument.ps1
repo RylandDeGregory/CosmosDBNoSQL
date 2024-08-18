@@ -20,7 +20,7 @@ function Remove-CosmosDocument {
             # Entra ID Authentication
             $RemoveDocParams = @{
                 Endpoint          = 'https://xxxxx.documents.azure.com:443/'
-                AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
+                AccessToken       = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '') -AsSecureString).Token
                 ResourceId        = "dbs/$DatabaseId/colls/$CollectionId"
                 PartitionKeyValue = $PartitionKeyValue
                 DocumentId        = $DocumentId
@@ -37,7 +37,7 @@ function Remove-CosmosDocument {
         [string] $MasterKey,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [string] $AccessToken,
+        [securestring] $AccessToken,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]

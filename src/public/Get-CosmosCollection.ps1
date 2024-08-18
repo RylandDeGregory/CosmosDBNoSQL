@@ -19,7 +19,7 @@ function Get-CosmosCollection {
             # Entra ID Authentication
             $GetCollectionParams = @{
                 Endpoint     = 'https://xxxxx.documents.azure.com:443/'
-                AccessToken  = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '')).Token
+                AccessToken  = (Get-AzAccessToken -ResourceUrl ($Endpoint -replace ':443\/?', '') -AsSecureString).Token
                 ResourceId   = "dbs/$DatabaseId"
                 CollectionId = 'MyCollection'
             }
@@ -36,7 +36,7 @@ function Get-CosmosCollection {
         [string] $MasterKey,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
-        [string] $AccessToken,
+        [securestring] $AccessToken,
 
         [Parameter(ParameterSetName = 'Entra ID', Mandatory)]
         [Parameter(ParameterSetName = 'Master Key', Mandatory)]
