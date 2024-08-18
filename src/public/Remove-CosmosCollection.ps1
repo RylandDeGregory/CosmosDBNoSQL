@@ -69,6 +69,7 @@ function Remove-CosmosCollection {
         $null = Invoke-RestMethod -Method Delete -Uri $private:RequestUri -Headers $private:Headers
         $ProgressPreference = 'Continue'
     } catch {
-        Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
+        throw $_.Exception
+        # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }
