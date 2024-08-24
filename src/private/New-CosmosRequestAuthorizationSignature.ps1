@@ -72,7 +72,7 @@ function New-CosmosRequestAuthorizationSignature {
             $HmacSha       = [System.Security.Cryptography.HMACSHA256]@{ Key = [Convert]::FromBase64String($MasterKey) }
             $Signature     = [Convert]::ToBase64String($HmacSha.ComputeHash([Text.Encoding]::UTF8.GetBytes($SigningString)))
         } catch {
-            Write-Error "Error generating Cosmos DB NoSQL REST API Authorization signature from Master Key: $_"
+            throw "Error generating Cosmos DB NoSQL REST API Authorization signature from Master Key: $_"
         } finally {
             $HmacSha.Dispose()
         }
@@ -85,7 +85,7 @@ function New-CosmosRequestAuthorizationSignature {
         # Url Encode the Authorization string
         $AuthorizationString = [System.Web.HttpUtility]::UrlEncode('type=' + $KeyType + '&ver=' + $TokenVersion + '&sig=' + $Signature)
     } catch {
-        Write-Error "Error URL encoding Cosmos DB NoSQL REST API Authorization signature: $_"
+        throw "Error URL encoding Cosmos DB NoSQL REST API Authorization signature: $_"
     }
 
     Write-Verbose "Generated [$KeyType] Authorization header for a [$Method] request against Cosmos DB NoSQL Collection [$ResourceId]"

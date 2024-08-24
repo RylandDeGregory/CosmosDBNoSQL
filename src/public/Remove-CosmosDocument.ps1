@@ -90,7 +90,7 @@ function Remove-CosmosDocument {
         $null = Invoke-RestMethod -Method Delete -Uri $private:RequestUri -Headers $private:Headers
         $ProgressPreference = 'Continue'
     } catch {
-        throw $_.Exception
+        throw $_
         # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }

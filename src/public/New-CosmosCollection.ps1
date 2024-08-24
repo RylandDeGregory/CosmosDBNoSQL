@@ -87,7 +87,7 @@ function New-CosmosCollection {
 
         return $private:OutputObject
     } catch {
-        throw $_.Exception
+        throw $_
         # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }

@@ -140,7 +140,7 @@ function Search-CosmosCollection {
             $private:Response = Invoke-WebRequest -Method Post -Uri $private:RequestUri -Headers $private:Headers -Body ($Query | ConvertTo-Json)
             $ProgressPreference = 'Continue'
         } catch {
-            throw $_.Exception
+            throw $_
             # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
             break
         }
