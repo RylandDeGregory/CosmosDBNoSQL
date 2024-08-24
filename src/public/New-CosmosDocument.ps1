@@ -163,7 +163,7 @@ function New-CosmosDocument {
 
         return $private:OutputObject
     } catch {
-        throw ($_ | ConvertFrom-Json)
+        throw $_
         # Write-Error "StatusCode: $($_.Exception.Response.StatusCode.value__) | ExceptionMessage: $($_.Exception.Message) | $_"
     }
 }

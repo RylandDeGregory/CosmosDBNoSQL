@@ -53,6 +53,6 @@ function New-HashedString {
             }
         }
     } catch {
-        Write-Error "Failed converting [$Algorithm] Hashed Bytes to [$OutputType] format: $_"
+        throw "Failed converting [$Algorithm] Hashed Bytes to [$OutputType] format: $_"
     }
 }
