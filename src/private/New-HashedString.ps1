@@ -26,8 +26,8 @@ function New-HashedString {
 
         # The output format of the hashed string
         [Parameter()]
-        [ValidateSet('HexString', 'Base64')]
-        [string] $OutputType = 'HexString'
+        [ValidateSet('String', 'Base64')]
+        [string] $OutputType = 'String'
     )
 
     try {
@@ -43,7 +43,7 @@ function New-HashedString {
     try {
         Write-Verbose "Converting [$Algorithm] Hashed Bytes to [$OutputType] format"
         switch ($OutputType) {
-            'HexString' {
+            'String' {
                 $HashedString = [Convert]::ToHexString($HashedBytes)
                 return $HashedString.ToLower()
             }
