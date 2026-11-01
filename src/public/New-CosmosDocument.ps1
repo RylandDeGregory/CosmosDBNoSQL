@@ -108,7 +108,7 @@ function New-CosmosDocument {
         'cache-control'                = 'no-cache'
         'content-type'                 = 'application/json'
         'x-ms-date'                    = $private:Date
-        'x-ms-documentdb-partitionkey' = "[`"$PartitionKeyValue`"]"
+        'x-ms-documentdb-partitionkey' = "[$PartitionKeyValue]"
         'x-ms-version'                 = '2018-12-31'
     }
     if ($IsUpsert) {

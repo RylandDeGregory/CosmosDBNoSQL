@@ -2,12 +2,13 @@
 
 A PowerShell module to interact with the Cosmos DB NoSQL REST API.
 
-[![Build Status](https://dev.azure.com/rylanddegregory/CosmosDBNoSQL/_apis/build/status%2FBuild%20%26%20Publish?branchName=main)](https://dev.azure.com/rylanddegregory/CosmosDBNoSQL/_build/latest?definitionId=17&branchName=main) [![CosmosDBNoSQL package in CosmosDBNoSQL feed in Azure Artifacts](https://feeds.dev.azure.com/rylanddegregory/dbe41a48-f2f8-4ebe-b768-95248d4addc5/_apis/public/Packaging/Feeds/CosmosDBNoSQL/Packages/5073f8c7-d18d-4a4d-8f43-808977e0fda9/Badge)](https://dev.azure.com/rylanddegregory/CosmosDBNoSQL/_artifacts/feed/CosmosDBNoSQL/NuGet/CosmosDBNoSQL?preferRelease=true)
+[![Build and release](https://github.com/RylandDeGregory/CosmosDBNoSQL/actions/workflows/release.yml/badge.svg)](https://github.com/RylandDeGregory/CosmosDBNoSQL/actions/workflows/release.yml) [![Latest release](https://img.shields.io/github/v/release/RylandDeGregory/CosmosDBNoSQL)](https://github.com/RylandDeGregory/CosmosDBNoSQL/releases/latest)
 
-## Install from Azure Artifacts
+## Install from GitHub Packages
 
 ```PowerShell
-Register-PSRepository -Name 'CosmosDBNoSQL' -SourceLocation 'https://pkgs.dev.azure.com/rylanddegregory/CosmosDBNoSQL/_packaging/CosmosDBNoSQL/nuget/v2'
-Install-Module -Name 'CosmosDBNoSQL'
+Register-PSResourceRepository -Name 'CosmosDBNoSQL' -Uri 'https://nuget.pkg.github.com/RylandDeGregory/index.json'
+$credential = Get-Credential -UserName 'YOUR_GITHUB_USERNAME' -Message 'Enter a classic GitHub PAT with read:packages access'
+Install-PSResource -Name 'CosmosDBNoSQL' -Repository 'CosmosDBNoSQL' -Credential $credential
 Import-Module -Name 'CosmosDBNoSQL' -Force
 ```
