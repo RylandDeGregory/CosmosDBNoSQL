@@ -44,7 +44,7 @@ function New-HashedString {
         Write-Verbose "Converting [$Algorithm] Hashed Bytes to [$OutputType] format"
         switch ($OutputType) {
             'String' {
-                $HashedString = [BitConverter]::ToString($HashedBytes) -replace '-', ''
+                $HashedString = [Convert]::ToHexString($HashedBytes)
                 return $HashedString.ToLower()
             }
             'Base64' {
